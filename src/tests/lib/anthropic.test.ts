@@ -98,7 +98,34 @@ describe('summarizeNewsForUser', () => {
     expect(result[0].insight).toBe('No significant developments today.')
   })
 
-  it('excludes tickers with no articles from the Claude call', async () => {
+  it('appends Chinese instruction to prompt when language is zh', async () => {
+    mockCreate.mockResolvedValue({
+      content: [{ type: 'text', text: 'AAPL: 业绩超预期。' }],
+    })
+    await summarizeNewsForUser([makeNews('AAPL', 'Apple')], 'zh')
+    const prompt: string = mockCreate.mock.calls[0][0].messages[0].content
+    expect(prompt).toContain('简体中文')
+    expect(prompt).toContain('今日无重大进展。')
+  })
+
+  it('does not append Chinese instruction when language is en', async () => {
+    mockCreate.mockResolvedValue({
+      content: [{ type: 'text', text: 'AAPL: Strong quarter.' }],
+    })
+    await summarizeNewsForUser([makeNews('AAPL', 'Apple')], 'en')
+    const prompt: string = mockCreate.mock.calls[0][0].messages[0].content
+    expect(prompt).not.toContain('简体中文')
+  })
+
+  it('uses Chinese fallback string when language is zh and ticker missing from response', async () => {
+    mockCreate.mockResolvedValue({
+      content: [{ type: 'text', text: '' }],
+    })
+    const result = await summarizeNewsForUser([makeNews('AAPL', 'Apple')], 'zh')
+    expect(result[0].insight).toBe('今日无重大进展。')
+  })
+
+  it('excludes tickers with no articles from the Claude call but includes them with fallback in result', async () => {
     mockCreate.mockResolvedValue({
       content: [{ type: 'text', text: 'AAPL: Solid quarter.' }],
     })
@@ -107,9 +134,11 @@ describe('summarizeNewsForUser', () => {
       { ticker: 'GOOG', company: 'Alphabet', articles: [] },
     ]
     const result = await summarizeNewsForUser(input)
-    // GOOG has no articles so it is excluded from both the prompt and the result
-    expect(result).toHaveLength(1)
-    expect(result[0].ticker).toBe('AAPL')
+    // Both tickers appear in the result
+    expect(result).toHaveLength(2)
+    expect(result.find(r => r.ticker === 'AAPL')?.insight).toBe('Solid quarter.')
+    // GOOG has no articles so it gets the fallback, not sent to Claude
+    expect(result.find(r => r.ticker === 'GOOG')?.insight).toBe('No significant developments today.')
     // Verify the prompt sent to Claude does not mention GOOG
     const prompt: string = mockCreate.mock.calls[0][0].messages[0].content
     expect(prompt).not.toContain('GOOG')
