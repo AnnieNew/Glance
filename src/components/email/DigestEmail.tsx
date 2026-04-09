@@ -14,6 +14,7 @@ interface Props {
   date: string
   appUrl: string
   language?: string
+  token?: string
 }
 
 const PREVIEW_ENTRIES = [
@@ -39,6 +40,7 @@ export default function DigestEmail({
   date = 'Tuesday, April 8, 2025',
   appUrl = 'https://glance.app',
   language = 'en',
+  token = '',
 }: Props) {
   return (
     <Html>
@@ -70,6 +72,22 @@ export default function DigestEmail({
           ))}
 
           <Hr style={{ borderColor: '#f4f4f5', margin: '32px 0 16px' }} />
+          {token && (
+            <Text style={{ fontSize: '11px', color: '#a1a1aa', margin: '0 0 8px' }}>
+              {language === 'zh' ? '今日摘要如何？' : "How was today's digest?"}{' '}
+              <Link href={`${appUrl}/feedback?token=${token}&rating=good`} style={{ color: '#27272a', fontWeight: 'bold', textDecoration: 'none' }}>
+                👍
+              </Link>
+              {'  '}
+              <Link href={`${appUrl}/feedback?token=${token}&rating=bad`} style={{ color: '#27272a', fontWeight: 'bold', textDecoration: 'none' }}>
+                👎
+              </Link>
+              {'  ·  '}
+              <Link href={`${appUrl}/feedback?token=${token}`} style={{ color: '#a1a1aa' }}>
+                {language === 'zh' ? '留下反馈' : 'Leave feedback'}
+              </Link>
+            </Text>
+          )}
           <Text style={{ fontSize: '11px', color: '#a1a1aa', margin: 0 }}>
             {language === 'zh' ? '管理您的股票订阅：' : 'Manage your stocks at'}{' '}
             <Link href={`${appUrl}/dashboard`} style={{ color: '#a1a1aa' }}>
