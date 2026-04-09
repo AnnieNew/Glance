@@ -43,28 +43,26 @@ export async function runDailyDigest() {
 
   for (const userId of userIds) {
     try {
-      // Check if already sent today
-      const { data: logs } = await supabase
-        .from('digest_logs')
-        .select('id')
-        .eq('user_id', userId)
-        .gte('sent_at', `${today}T00:00:00Z`)
-        .lte('sent_at', `${today}T23:59:59Z`)
-        .limit(1)
+      // TODO: re-enable dedup check before going to production
+      // const { data: logs } = await supabase
+      //   .from('digest_logs')
+      //   .select('id')
+      //   .eq('user_id', userId)
+      //   .gte('sent_at', `${today}T00:00:00Z`)
+      //   .lte('sent_at', `${today}T23:59:59Z`)
+      //   .limit(1)
+      // if (logs && logs.length > 0) { skipped++; continue }
 
-      if (logs && logs.length > 0) {
-        skipped++
-        continue
-      }
-
-      // Get user email
+      // Get user email and language preference
       const { data: profile } = await supabase
         .from('profiles')
-        .select('email')
+        .select('email, language')
         .eq('id', userId)
         .single()
 
       if (!profile?.email) { skipped++; continue }
+
+      const language = profile.language ?? 'en'
 
       // Get their subscriptions
       const { data: subs } = await supabase
@@ -86,14 +84,16 @@ export async function runDailyDigest() {
       )
 
       // Summarize with Claude (one call per user)
-      const entries = await summarizeNewsForUser(tickerNews)
+      const entries = await summarizeNewsForUser(tickerNews, language)
       if (entries.length === 0) { skipped++; continue }
 
       // Send email
-      const dateLabel = new Date().toLocaleDateString('en-US', {
-        weekday: 'long', month: 'long', day: 'numeric'
+      const locale = language === 'zh' ? 'zh-CN' : 'en-US'
+      const dateLabel = new Date().toLocaleDateString(locale, {
+        weekday: 'long', year: language === 'zh' ? 'numeric' : undefined,
+        month: 'long', day: 'numeric',
       })
-      await sendDigestEmail(profile.email, entries, dateLabel)
+      await sendDigestEmail(profile.email, entries, dateLabel, language)
 
       await supabase.from('digest_logs').insert({
         user_id: userId,

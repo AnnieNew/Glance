@@ -1,16 +1,24 @@
 import { createClient } from '@/lib/supabase/server'
 import { Subscription } from '@/types'
 import SubscriptionList from '@/components/dashboard/SubscriptionList'
+import LanguageToggle from '@/components/dashboard/LanguageToggle'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data } = await supabase
-    .from('subscriptions')
-    .select('*')
-    .eq('user_id', user!.id)
-    .order('created_at', { ascending: false })
+  const [{ data: subscriptions }, { data: profile }] = await Promise.all([
+    supabase
+      .from('subscriptions')
+      .select('*')
+      .eq('user_id', user!.id)
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('profiles')
+      .select('language')
+      .eq('id', user!.id)
+      .single(),
+  ])
 
   return (
     <main className="max-w-2xl mx-auto px-6 py-10">
@@ -20,7 +28,8 @@ export default async function DashboardPage() {
           We&apos;ll send you a daily digest with what actually matters.
         </p>
       </div>
-      <SubscriptionList initialSubscriptions={(data as Subscription[]) ?? []} />
+      <SubscriptionList initialSubscriptions={(subscriptions as Subscription[]) ?? []} />
+      <LanguageToggle initialLanguage={profile?.language ?? 'en'} />
     </main>
   )
 }

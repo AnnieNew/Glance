@@ -7,15 +7,39 @@ import {
   Hr,
   Link,
 } from '@react-email/components'
-import { DigestEntry } from '@/types'
+import { DigestEntry } from '../../types'
 
 interface Props {
   entries: DigestEntry[]
   date: string
   appUrl: string
+  language?: string
 }
 
-export default function DigestEmail({ entries, date, appUrl }: Props) {
+const PREVIEW_ENTRIES = [
+  {
+    ticker: 'AAPL',
+    company: 'Apple Inc.',
+    insight: 'Stronger-than-expected iPhone demand in China offsets near-term tariff headwinds.',
+  },
+  {
+    ticker: 'NVDA',
+    company: 'NVIDIA Corporation',
+    insight: 'New export controls on H20 chips risk $5B in near-term China revenue.',
+  },
+  {
+    ticker: 'TSLA',
+    company: 'Tesla Inc.',
+    insight: 'European deliveries fell 49% YoY in March, raising demand concern beyond CEO friction.',
+  },
+]
+
+export default function DigestEmail({
+  entries = PREVIEW_ENTRIES,
+  date = 'Tuesday, April 8, 2025',
+  appUrl = 'https://glance.app',
+  language = 'en',
+}: Props) {
   return (
     <Html>
       <Head />
@@ -47,13 +71,13 @@ export default function DigestEmail({ entries, date, appUrl }: Props) {
 
           <Hr style={{ borderColor: '#f4f4f5', margin: '32px 0 16px' }} />
           <Text style={{ fontSize: '11px', color: '#a1a1aa', margin: 0 }}>
-            Manage your stocks at{' '}
+            {language === 'zh' ? '管理您的股票订阅：' : 'Manage your stocks at'}{' '}
             <Link href={`${appUrl}/dashboard`} style={{ color: '#a1a1aa' }}>
               {appUrl}
             </Link>
             {' · '}
             <Link href={`${appUrl}/unsubscribe`} style={{ color: '#a1a1aa' }}>
-              Unsubscribe
+              {language === 'zh' ? '取消订阅' : 'Unsubscribe'}
             </Link>
           </Text>
         </Container>
