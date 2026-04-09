@@ -3,15 +3,7 @@ import { getCompanyNews } from './finnhub'
 import { summarizeNewsForUser } from './anthropic'
 import { sendDigestEmail } from './resend'
 import { TickerNews } from '@/types'
-import { createClient as createSupabaseClient } from '@supabase/supabase-js'
-
-// Uses service role key to read all users — bypasses RLS
-function getAdminClient() {
-  return createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
-}
+import { getAdminClient } from './supabase/admin'
 
 function todayDateString() {
   return new Date().toISOString().split('T')[0] // e.g. "2026-04-07"
@@ -43,15 +35,14 @@ export async function runDailyDigest() {
 
   for (const userId of userIds) {
     try {
-      // TODO: re-enable dedup check before going to production
-      // const { data: logs } = await supabase
-      //   .from('digest_logs')
-      //   .select('id')
-      //   .eq('user_id', userId)
-      //   .gte('sent_at', `${today}T00:00:00Z`)
-      //   .lte('sent_at', `${today}T23:59:59Z`)
-      //   .limit(1)
-      // if (logs && logs.length > 0) { skipped++; continue }
+      const { data: logs } = await supabase
+        .from('digest_logs')
+        .select('id')
+        .eq('user_id', userId)
+        .gte('sent_at', `${today}T00:00:00Z`)
+        .lte('sent_at', `${today}T23:59:59Z`)
+        .limit(1)
+      if (logs && logs.length > 0) { skipped++; continue }
 
       // Get user email and language preference
       const { data: profile } = await supabase
@@ -93,13 +84,13 @@ export async function runDailyDigest() {
         weekday: 'long', year: language === 'zh' ? 'numeric' : undefined,
         month: 'long', day: 'numeric',
       })
-      await sendDigestEmail(profile.email, entries, dateLabel, language)
+      const { data: logRow } = await supabase
+        .from('digest_logs')
+        .insert({ user_id: userId, ticker_count: entries.length, status: 'sent' })
+        .select('token')
+        .single()
 
-      await supabase.from('digest_logs').insert({
-        user_id: userId,
-        ticker_count: entries.length,
-        status: 'sent',
-      })
+      await sendDigestEmail(profile.email, entries, dateLabel, language, logRow?.token ?? '')
 
       sent++
     } catch (err) {

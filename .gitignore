@@ -42,3 +42,6 @@ next-env.d.ts
 
 # local design docs
 /docs/
+
+# MCP server config (contains access tokens)
+.mcp.json
