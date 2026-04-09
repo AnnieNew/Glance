@@ -69,10 +69,10 @@ export default function StockSearch({ onAdd, currentTickers, atLimit }: Props) {
         onFocus={() => results.length > 0 && setOpen(true)}
         placeholder={atLimit ? 'Remove a stock to add another' : 'Search stocks — try "Apple" or "AAPL"'}
         disabled={atLimit}
-        className="w-full border border-zinc-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-zinc-400 transition-colors disabled:bg-zinc-50 disabled:text-zinc-400"
+        className="w-full border border-border rounded-lg px-3 py-2 text-sm outline-none focus:border-border-strong transition-colors bg-background text-foreground disabled:opacity-50"
       />
       {loading && (
-        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-300">
+        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-subtle">
           searching…
         </span>
       )}
@@ -80,7 +80,7 @@ export default function StockSearch({ onAdd, currentTickers, atLimit }: Props) {
       {open && results.length > 0 && (
         <ul
           ref={listRef}
-          className="absolute z-10 mt-1 w-full bg-white border border-zinc-200 rounded-lg shadow-sm overflow-hidden"
+          className="absolute z-10 mt-1 w-full bg-background border border-border rounded-lg shadow-sm overflow-hidden"
         >
           {results.map(r => {
             const alreadyAdded = currentTickers.includes(r.ticker)
@@ -90,14 +90,14 @@ export default function StockSearch({ onAdd, currentTickers, atLimit }: Props) {
                   type="button"
                   onClick={() => handleSelect(r)}
                   disabled={alreadyAdded}
-                  className="w-full text-left px-4 py-2.5 text-sm flex items-center justify-between hover:bg-zinc-50 transition-colors disabled:cursor-default"
+                  className="w-full text-left px-4 py-2.5 text-sm flex items-center justify-between hover:bg-border transition-colors disabled:cursor-default"
                 >
                   <span>
                     <span className="font-mono font-semibold">{r.ticker}</span>
-                    <span className="text-zinc-400 ml-2">{r.company}</span>
+                    <span className="text-muted ml-2">{r.company}</span>
                   </span>
                   {alreadyAdded && (
-                    <span className="text-xs text-zinc-300">Added</span>
+                    <span className="text-xs text-muted-subtle">Added</span>
                   )}
                 </button>
               </li>

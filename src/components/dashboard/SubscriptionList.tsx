@@ -108,7 +108,7 @@ export default function SubscriptionList({ initialSubscriptions }: Props) {
       />
 
       {subscriptions.length === 0 && pendingAdds.length === 0 ? (
-        <p className="text-sm text-zinc-400 text-center py-8">
+        <p className="text-sm text-muted text-center py-8">
           No stocks yet. Search above to add your first one.
         </p>
       ) : (
@@ -136,34 +136,34 @@ export default function SubscriptionList({ initialSubscriptions }: Props) {
 
       {/* Save bar */}
       {hasPending ? (
-        <div className="flex items-center justify-between pt-2 border-t border-zinc-100">
-          <span className="text-xs text-zinc-400">
+        <div className="flex items-center justify-between pt-2 border-t border-border">
+          <span className="text-xs text-muted">
             {pendingCount} unsaved {pendingCount === 1 ? 'change' : 'changes'}
           </span>
           <div className="flex gap-2">
             <button
               onClick={handleDiscard}
               disabled={saving}
-              className="border border-zinc-200 text-zinc-600 rounded-lg px-3 py-1.5 text-sm hover:border-zinc-400 transition-colors disabled:opacity-50"
+              className="border border-border text-muted rounded-lg px-3 py-1.5 text-sm hover:border-border-strong hover:text-foreground transition-colors disabled:opacity-50"
             >
               Discard
             </button>
             <button
               onClick={handleSave}
               disabled={saving}
-              className="bg-black text-white rounded-lg px-3 py-1.5 text-sm hover:bg-zinc-800 transition-colors disabled:opacity-50"
+              className="bg-foreground text-background rounded-lg px-3 py-1.5 text-sm hover:opacity-80 transition-opacity disabled:opacity-50"
             >
               {saving ? 'Saving…' : 'Save changes'}
             </button>
           </div>
         </div>
       ) : (
-        <div className="flex items-center justify-between pt-2 border-t border-zinc-100 min-h-[36px]">
+        <div className="flex items-center justify-between pt-2 border-t border-border min-h-[36px]">
           {savedAt ? (
-            <span className="text-xs text-zinc-400">Saved ✓</span>
+            <span className="text-xs text-muted">Saved ✓</span>
           ) : (
             totalCount > 0 && (
-              <p className="text-xs text-zinc-400">
+              <p className="text-xs text-muted">
                 {totalCount}/20 stocks · digest sent daily at 7:00 AM UTC
               </p>
             )
