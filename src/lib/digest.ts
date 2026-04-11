@@ -15,17 +15,18 @@ function yesterdayDateString() {
   return d.toISOString().split('T')[0]
 }
 
-export async function runDigestForUser(userId: string, skipDedup = false): Promise<'sent' | 'skipped' | 'failed'> {
+export async function runDigestForUser(userId: string, source: 'cron' | 'manual' = 'cron'): Promise<'sent' | 'skipped' | 'failed'> {
   const supabase = getAdminClient()
   const today = todayDateString()
   const yesterday = yesterdayDateString()
 
   try {
-    if (!skipDedup) {
+    if (source === 'cron') {
       const { data: logs } = await supabase
         .from('digest_logs')
         .select('id')
         .eq('user_id', userId)
+        .eq('source', 'cron')
         .gte('sent_at', `${today}T00:00:00Z`)
         .lte('sent_at', `${today}T23:59:59Z`)
         .limit(1)
@@ -71,7 +72,7 @@ export async function runDigestForUser(userId: string, skipDedup = false): Promi
     })
     const { data: logRow } = await supabase
       .from('digest_logs')
-      .insert({ user_id: userId, ticker_count: entries.length, status: 'sent' })
+      .insert({ user_id: userId, ticker_count: entries.length, status: 'sent', source })
       .select('token')
       .single()
 
@@ -85,6 +86,7 @@ export async function runDigestForUser(userId: string, skipDedup = false): Promi
         user_id: userId,
         ticker_count: 0,
         status: 'failed',
+        source,
       })
     } catch { /* ignore log failure */ }
     return 'failed'
