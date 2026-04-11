@@ -9,7 +9,13 @@ export async function summarizeNewsForUser(tickerNews: TickerNews[], language = 
   }
 
   const withArticles = tickerNews.filter(t => t.articles.length > 0)
-  if (withArticles.length === 0) return []
+  if (withArticles.length === 0) {
+    return tickerNews.map(t => ({
+      ticker: t.ticker,
+      company: t.company,
+      insight: language === 'zh' ? '今日无重大进展。' : 'No significant developments today.',
+    }))
+  }
 
   const newsBlock = withArticles.map(t => {
     const articles = t.articles

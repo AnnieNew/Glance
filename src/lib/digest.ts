@@ -62,7 +62,6 @@ export async function runDigestForUser(userId: string, skipDedup = false): Promi
 
     // Summarize with Claude (one call per user)
     const entries = await summarizeNewsForUser(tickerNews, language)
-    if (entries.length === 0) return 'skipped'
 
     // Send email
     const locale = language === 'zh' ? 'zh-CN' : 'en-US'

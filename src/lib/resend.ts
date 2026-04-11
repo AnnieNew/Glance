@@ -8,7 +8,7 @@ export async function sendDigestEmail(to: string, entries: DigestEntry[], date: 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? ''
   const html = await render(DigestEmail({ entries, date, appUrl, language, token }))
 
-  return resend.emails.send({
+  const { data, error } = await resend.emails.send({
     from: process.env.RESEND_FROM_EMAIL!,
     to,
     subject: `Glance · ${date}`,
@@ -18,4 +18,6 @@ export async function sendDigestEmail(to: string, entries: DigestEntry[], date: 
       'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
     },
   })
+  if (error) throw new Error(`Resend error: ${error.message}`)
+  return data
 }

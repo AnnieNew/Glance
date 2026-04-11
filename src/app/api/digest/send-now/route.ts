@@ -12,5 +12,5 @@ export async function POST() {
 
   const result = await runDigestForUser(user.id, true)
   if (result === 'failed') return NextResponse.json({ error: 'Digest failed' }, { status: 500 })
-  return NextResponse.json({ ok: true, result })
+  return NextResponse.json({ ok: true })
 }
