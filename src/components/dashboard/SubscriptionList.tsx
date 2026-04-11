@@ -164,7 +164,7 @@ export default function SubscriptionList({ initialSubscriptions }: Props) {
           ) : (
             totalCount > 0 && (
               <p className="text-xs text-muted">
-                {totalCount}/20 stocks · digest sent daily at 7:00 AM UTC
+                {totalCount}/20 stocks · digest sent weekdays at 6:00 AM PDT
               </p>
             )
           )}
