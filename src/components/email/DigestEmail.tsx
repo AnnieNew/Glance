@@ -64,6 +64,14 @@ export default function DigestEmail({
               </Text>
               <Text style={{ margin: '0 0 20px', fontSize: '13px', color: '#27272a', lineHeight: '1.6' }}>
                 {entry.insight}
+                {entry.sources && entry.sources.map((s, i) => (
+                  <span key={i}>
+                    {' '}
+                    <Link href={s.url} style={{ color: '#a1a1aa', fontSize: '11px', textDecoration: 'none' }}>
+                      [{i + 1}]
+                    </Link>
+                  </span>
+                ))}
               </Text>
               {i < entries.length - 1 && (
                 <Hr style={{ borderColor: '#f4f4f5', margin: '0 0 20px' }} />

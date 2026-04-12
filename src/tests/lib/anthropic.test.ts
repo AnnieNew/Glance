@@ -38,13 +38,15 @@ describe('summarizeNewsForUser', () => {
     expect(mockCreate).not.toHaveBeenCalled()
   })
 
-  it('returns [] when all tickers have no articles without calling Claude', async () => {
+  it('returns fallback entries when all tickers have no articles without calling Claude', async () => {
     const input: TickerNews[] = [
       { ticker: 'AAPL', company: 'Apple', articles: [] },
       { ticker: 'MSFT', company: 'Microsoft', articles: [] },
     ]
     const result = await summarizeNewsForUser(input)
-    expect(result).toEqual([])
+    expect(result).toHaveLength(2)
+    expect(result[0].insight).toBe('No significant developments today.')
+    expect(result[0].sources).toEqual([])
     expect(mockCreate).not.toHaveBeenCalled()
   })
 
