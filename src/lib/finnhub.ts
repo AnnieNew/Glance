@@ -27,6 +27,7 @@ export async function getCompanyNews(ticker: string, from: string, to: string) {
     summary: string
     datetime: number
     source: string
+    url: string
   }>)
     .sort((a, b) => b.datetime - a.datetime)
     .slice(0, 3)

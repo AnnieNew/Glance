@@ -14,12 +14,13 @@ export async function summarizeNewsForUser(tickerNews: TickerNews[], language = 
       ticker: t.ticker,
       company: t.company,
       insight: language === 'zh' ? '今日无重大进展。' : 'No significant developments today.',
+      sources: [],
     }))
   }
 
   const newsBlock = withArticles.map(t => {
     const articles = t.articles
-      .map(a => `  - ${a.headline}${a.summary ? ': ' + a.summary.slice(0, 200) : ''}`)
+      .map((a, i) => `  [${i + 1}] ${a.headline}${a.summary ? ': ' + a.summary.slice(0, 200) : ''}`)
       .join('\n')
     return `${t.ticker} (${t.company}):\n${articles}`
   }).join('\n\n')
@@ -30,10 +31,14 @@ export async function summarizeNewsForUser(tickerNews: TickerNews[], language = 
 
   const prompt = `You are an AI analyst for busy investors. For each stock below, write exactly ONE sentence (max 25 words) capturing the single most logic-shifting piece of information — news that genuinely changes how a rational investor should think about this company. Focus on what matters: earnings surprises, leadership changes, regulatory shifts, product pivots, or macro impacts on this specific business. Ignore routine noise, minor price moves, and analyst upgrades/downgrades unless they are unusually significant.
 
-If there is no meaningful news, write: "No significant developments today."
+If there is no meaningful news, write: "No significant developments today." with no citation.
+
+Cite the article number(s) you used in square brackets immediately after the ticker. If you used multiple articles, list them comma-separated.
 
 Format your response EXACTLY like this (one line per stock, no extra lines):
-TICKER: <insight>
+TICKER [1]: <insight>
+TICKER [1,2]: <insight>
+TICKER: No significant developments today.
 
 News:
 ${newsBlock}${languageInstruction}`
@@ -46,16 +51,28 @@ ${newsBlock}${languageInstruction}`
 
   const text = message.content[0].type === 'text' ? message.content[0].text : ''
 
-  // Parse "TICKER: insight" lines
-  const parsed = new Map<string, string>()
+  // Parse "TICKER [1,2]: insight" or "TICKER: insight" lines
+  const parsed = new Map<string, { insight: string; indices: number[] }>()
   for (const line of text.split('\n')) {
-    const match = line.match(/^([A-Z.]+):\s*(.+)$/)
-    if (match) parsed.set(match[1], match[2].trim())
+    const match = line.match(/^([A-Z.]+)(?:\s*\[([0-9,\s]+)\])?:\s*(.+)$/)
+    if (match) {
+      const indices = match[2]
+        ? match[2].split(',').map(s => parseInt(s.trim(), 10) - 1).filter(n => !isNaN(n))
+        : []
+      parsed.set(match[1], { insight: match[3].trim(), indices })
+    }
   }
 
-  return tickerNews.map(t => ({
-    ticker: t.ticker,
-    company: t.company,
-    insight: parsed.get(t.ticker) ?? (language === 'zh' ? '今日无重大进展。' : 'No significant developments today.'),
-  }))
+  const fallback = language === 'zh' ? '今日无重大进展。' : 'No significant developments today.'
+  return tickerNews.map(t => {
+    const entry = parsed.get(t.ticker)
+    const insight = entry?.insight ?? fallback
+    const citedIndices = entry?.indices ?? []
+    const sources = insight === fallback || citedIndices.length === 0
+      ? []
+      : citedIndices
+          .filter(i => i >= 0 && i < t.articles.length)
+          .map(i => ({ headline: t.articles[i].headline, url: t.articles[i].url }))
+    return { ticker: t.ticker, company: t.company, insight, sources }
+  })
 }

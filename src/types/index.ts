@@ -15,6 +15,7 @@ export interface DigestEntry {
   ticker: string
   company: string
   insight: string
+  sources?: { headline: string; url: string }[]
 }
 
 export interface TickerNews {
@@ -25,5 +26,6 @@ export interface TickerNews {
     summary: string
     datetime: number
     source: string
+    url: string
   }[]
 }
