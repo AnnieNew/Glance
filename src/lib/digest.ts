@@ -72,7 +72,7 @@ export async function runDigestForUser(userId: string, source: 'cron' | 'manual'
     })
     const { data: logRow } = await supabase
       .from('digest_logs')
-      .insert({ user_id: userId, ticker_count: entries.length, status: 'sent', source })
+      .insert({ user_id: userId, ticker_count: entries.length, status: 'sent', source, entries })
       .select('token')
       .single()
 
@@ -214,7 +214,7 @@ export async function runDailyDigest() {
 
           const { data: logRow, error: logErr } = await supabase
             .from('digest_logs')
-            .insert({ user_id: user.userId, ticker_count: entries.length, status: 'sent', source: 'cron' })
+            .insert({ user_id: user.userId, ticker_count: entries.length, status: 'sent', source: 'cron', entries })
             .select('token')
             .single()
 
