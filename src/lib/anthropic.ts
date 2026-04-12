@@ -25,23 +25,25 @@ export async function summarizeNewsForUser(tickerNews: TickerNews[], language = 
     return `${t.ticker} (${t.company}):\n${articles}`
   }).join('\n\n')
 
-  const languageInstruction = language === 'zh'
-    ? '\nRespond in Simplified Chinese (简体中文). The fallback phrase should be "今日无重大进展。"'
+  const isZh = language === 'zh'
+  const fallbackPhrase = isZh ? '今日无重大进展。' : 'No significant developments today.'
+  const languageInstruction = isZh
+    ? 'You MUST write every insight in Simplified Chinese (简体中文). Do not use English anywhere in your response.\n\n'
     : ''
 
-  const prompt = `You are an AI analyst for busy investors. For each stock below, write exactly ONE sentence (max 25 words) capturing the single most logic-shifting piece of information — news that genuinely changes how a rational investor should think about this company. Focus on what matters: earnings surprises, leadership changes, regulatory shifts, product pivots, or macro impacts on this specific business. Ignore routine noise, minor price moves, and analyst upgrades/downgrades unless they are unusually significant.
+  const prompt = `${languageInstruction}You are an AI analyst for busy investors. For each stock below, write exactly ONE sentence (max 25 words) capturing the single most logic-shifting piece of information — news that genuinely changes how a rational investor should think about this company. Focus on what matters: earnings surprises, leadership changes, regulatory shifts, product pivots, or macro impacts on this specific business. Ignore routine noise, minor price moves, and analyst upgrades/downgrades unless they are unusually significant.
 
-If there is no meaningful news, write: "No significant developments today." with no citation.
+If there is no meaningful news, write: "${fallbackPhrase}" with no citation.
 
 Cite the article number(s) you used in square brackets immediately after the ticker. If you used multiple articles, list them comma-separated.
 
 Format your response EXACTLY like this (one line per stock, no extra lines):
 TICKER [1]: <insight>
 TICKER [1,2]: <insight>
-TICKER: No significant developments today.
+TICKER: ${fallbackPhrase}
 
 News:
-${newsBlock}${languageInstruction}`
+${newsBlock}`
 
   const message = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
