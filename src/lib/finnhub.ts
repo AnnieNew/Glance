@@ -15,6 +15,14 @@ export async function searchSymbols(query: string) {
     }))
 }
 
+export async function getQuote(ticker: string): Promise<{ price: number; change: number; changePercent: number } | null> {
+  const res = await fetch(`${BASE}/quote?symbol=${ticker}&token=${KEY}`)
+  if (!res.ok) return null
+  const data = await res.json()
+  if (!data || data.c === 0) return null
+  return { price: data.c, change: data.d, changePercent: data.dp }
+}
+
 export async function getCompanyNews(ticker: string, from: string, to: string) {
   const res = await fetch(
     `${BASE}/company-news?symbol=${ticker}&from=${from}&to=${to}&token=${KEY}`

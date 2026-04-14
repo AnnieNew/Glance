@@ -1,5 +1,5 @@
 import pLimit from 'p-limit'
-import { getCompanyNews } from './finnhub'
+import { getCompanyNews, getQuote } from './finnhub'
 import { summarizeNewsForUser } from './anthropic'
 import { sendDigestEmail } from './resend'
 import { TickerNews, DigestEntry } from '@/types'
@@ -50,19 +50,28 @@ export async function runDigestForUser(userId: string, source: 'cron' | 'manual'
 
     if (!subs || subs.length === 0) return 'skipped'
 
-    // Fetch news for each ticker (rate-limited to 8 concurrent)
+    // Fetch news + quote for each ticker (rate-limited to 8 concurrent)
     const limit = pLimit(8)
+    const quoteMap = new Map<string, { price: number; change: number; changePercent: number } | null>()
     const tickerNews: TickerNews[] = await Promise.all(
       subs.map(s =>
         limit(async () => {
-          const articles = await getCompanyNews(s.ticker, yesterday, today)
+          const [articles, quote] = await Promise.all([
+            getCompanyNews(s.ticker, yesterday, today),
+            getQuote(s.ticker),
+          ])
+          quoteMap.set(s.ticker, quote)
           return { ticker: s.ticker, company: s.company, articles }
         })
       )
     )
 
     // Summarize with Claude (one call per user)
-    const entries = await summarizeNewsForUser(tickerNews, language)
+    const rawEntries = await summarizeNewsForUser(tickerNews, language)
+    const entries = rawEntries.map(e => ({
+      ...e,
+      priceChange: quoteMap.get(e.ticker) ?? undefined,
+    }))
 
     // Send email
     const locale = language === 'zh' ? 'zh-CN' : 'en-US'
@@ -164,14 +173,19 @@ export async function runDailyDigest() {
     }
   }
 
-  // Phase 3a: Fetch Finnhub news once per unique ticker
+  // Phase 3a: Fetch Finnhub news + quote once per unique ticker
   const finnhubLimit = pLimit(8)
   const newsMap = new Map<string, TickerNews>()
+  const quoteMap = new Map<string, { price: number; change: number; changePercent: number } | null>()
   await Promise.all(
     [...globalTickerMap.entries()].map(([ticker, company]) =>
       finnhubLimit(async () => {
-        const articles = await getCompanyNews(ticker, yesterday, today)
+        const [articles, quote] = await Promise.all([
+          getCompanyNews(ticker, yesterday, today),
+          getQuote(ticker),
+        ])
         newsMap.set(ticker, { ticker, company, articles })
+        quoteMap.set(ticker, quote)
       })
     )
   )
@@ -200,9 +214,11 @@ export async function runDailyDigest() {
     activeUsers.map(user =>
       emailLimit(async () => {
         try {
-          const entries: DigestEntry[] = user.tickers
-            .map(({ ticker }) => insightMap.get(`${ticker}:${user.language}`))
-            .filter((e): e is DigestEntry => e !== undefined)
+          const entries: DigestEntry[] = user.tickers.reduce<DigestEntry[]>((acc, { ticker }) => {
+            const e = insightMap.get(`${ticker}:${user.language}`)
+            if (e) acc.push({ ...e, priceChange: quoteMap.get(ticker) ?? undefined })
+            return acc
+          }, [])
 
           if (entries.length === 0) { skipped++; return }
 

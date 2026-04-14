@@ -61,6 +61,18 @@ export default function DigestEmail({
                 <span style={{ fontWeight: 'normal', color: '#71717a', marginLeft: '8px', fontSize: '12px' }}>
                   {entry.company}
                 </span>
+                {entry.priceChange && (
+                  <span style={{ fontWeight: 'normal', marginLeft: '8px', fontSize: '12px' }}>
+                    <span style={{ color: '#71717a' }}>${entry.priceChange.price.toFixed(2)}</span>
+                    <span style={{
+                      color: entry.priceChange.change >= 0 ? '#16a34a' : '#dc2626',
+                      marginLeft: '6px',
+                    }}>
+                      {entry.priceChange.change >= 0 ? '+' : ''}{entry.priceChange.change.toFixed(2)}{' '}
+                      ({entry.priceChange.change >= 0 ? '+' : ''}{entry.priceChange.changePercent.toFixed(2)}%)
+                    </span>
+                  </span>
+                )}
               </Text>
               <Text style={{ margin: '0 0 20px', fontSize: '13px', color: '#27272a', lineHeight: '1.6' }}>
                 {entry.insight}

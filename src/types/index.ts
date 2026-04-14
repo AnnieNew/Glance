@@ -16,6 +16,7 @@ export interface DigestEntry {
   company: string
   insight: string
   sources?: { headline: string; url: string }[]
+  priceChange?: { price: number; change: number; changePercent: number }
 }
 
 export interface TickerNews {
