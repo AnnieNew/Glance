@@ -107,7 +107,7 @@ export default function DigestEmail({
                 {language === 'zh' ? '留下反馈' : 'Leave feedback'}
               </Link>
               {'  ·  '}
-              <Link href={`${appUrl}/share?token=${token}`} style={{ color: '#a1a1aa' }}>
+              <Link href={`${appUrl}/share?token=${token}&lang=${language}`} style={{ color: '#a1a1aa' }}>
                 {language === 'zh' ? '分享今日亮点' : 'Share highlights'}
               </Link>
             </Text>

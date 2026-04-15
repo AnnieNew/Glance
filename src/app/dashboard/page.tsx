@@ -21,19 +21,22 @@ export default async function DashboardPage() {
       .single(),
   ])
 
+  const language = profile?.language ?? 'en'
+  const zh = language === 'zh'
+
   return (
     <main className="max-w-2xl mx-auto px-6 py-10">
       <div className="mb-8 flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold">Your stocks</h1>
+          <h1 className="text-xl font-semibold">{zh ? '我的股票' : 'Your stocks'}</h1>
           <p className="text-sm text-muted mt-1">
-            We&apos;ll send you a daily digest with what actually matters.
+            {zh ? '每个工作日为您推送精选行情摘要。' : "We'll send you a daily digest with what actually matters."}
           </p>
         </div>
-        <SendNowButton hasSubscriptions={(subscriptions?.length ?? 0) > 0} />
+        <SendNowButton hasSubscriptions={(subscriptions?.length ?? 0) > 0} language={language} />
       </div>
-      <SubscriptionList initialSubscriptions={(subscriptions as Subscription[]) ?? []} />
-      <LanguageToggle initialLanguage={profile?.language ?? 'en'} />
+      <SubscriptionList initialSubscriptions={(subscriptions as Subscription[]) ?? []} language={language} />
+      <LanguageToggle initialLanguage={language} />
     </main>
   )
 }

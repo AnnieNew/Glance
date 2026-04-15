@@ -7,14 +7,16 @@ import StockSearch from './StockSearch'
 
 interface Props {
   initialSubscriptions: Subscription[]
+  language?: string
 }
 
-export default function SubscriptionList({ initialSubscriptions }: Props) {
+export default function SubscriptionList({ initialSubscriptions, language = 'en' }: Props) {
   const [subscriptions, setSubscriptions] = useState(initialSubscriptions)
   const [pendingAdds, setPendingAdds] = useState<{ ticker: string; company: string }[]>([])
   const [pendingRemoves, setPendingRemoves] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
   const [savedAt, setSavedAt] = useState<number | null>(null)
+  const zh = language === 'zh'
 
   const hasPending = pendingAdds.length > 0 || pendingRemoves.length > 0
   const pendingCount = pendingAdds.length + pendingRemoves.length
@@ -105,11 +107,12 @@ export default function SubscriptionList({ initialSubscriptions }: Props) {
         onAdd={handleAdd}
         currentTickers={allCurrentTickers}
         atLimit={totalCount >= 20}
+        language={language}
       />
 
       {subscriptions.length === 0 && pendingAdds.length === 0 ? (
         <p className="text-sm text-muted text-center py-8">
-          No stocks yet. Search above to add your first one.
+          {zh ? '暂无股票，请在上方搜索添加。' : 'No stocks yet. Search above to add your first one.'}
         </p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -120,6 +123,7 @@ export default function SubscriptionList({ initialSubscriptions }: Props) {
               onRemove={handleRemove}
               removing={false}
               isPendingAdd
+              language={language}
             />
           ))}
           {subscriptions.map(s => (
@@ -129,6 +133,7 @@ export default function SubscriptionList({ initialSubscriptions }: Props) {
               onRemove={handleRemove}
               removing={false}
               pendingRemove={pendingRemoves.includes(s.ticker)}
+              language={language}
             />
           ))}
         </div>
@@ -138,7 +143,9 @@ export default function SubscriptionList({ initialSubscriptions }: Props) {
       {hasPending ? (
         <div className="flex items-center justify-between pt-2 border-t border-border">
           <span className="text-xs text-muted">
-            {pendingCount} unsaved {pendingCount === 1 ? 'change' : 'changes'}
+            {zh
+              ? `${pendingCount} 条待保存`
+              : `${pendingCount} unsaved ${pendingCount === 1 ? 'change' : 'changes'}`}
           </span>
           <div className="flex gap-2">
             <button
@@ -146,25 +153,27 @@ export default function SubscriptionList({ initialSubscriptions }: Props) {
               disabled={saving}
               className="border border-border text-muted rounded-lg px-3 py-1.5 text-sm hover:border-border-strong hover:text-foreground transition-colors disabled:opacity-50"
             >
-              Discard
+              {zh ? '丢弃' : 'Discard'}
             </button>
             <button
               onClick={handleSave}
               disabled={saving}
               className="bg-foreground text-background rounded-lg px-3 py-1.5 text-sm hover:opacity-80 transition-opacity disabled:opacity-50"
             >
-              {saving ? 'Saving…' : 'Save changes'}
+              {saving ? (zh ? '保存中…' : 'Saving…') : (zh ? '保存' : 'Save changes')}
             </button>
           </div>
         </div>
       ) : (
         <div className="flex items-center justify-between pt-2 border-t border-border min-h-[36px]">
           {savedAt ? (
-            <span className="text-xs text-muted">Saved ✓</span>
+            <span className="text-xs text-muted">{zh ? '已保存 ✓' : 'Saved ✓'}</span>
           ) : (
             totalCount > 0 && (
               <p className="text-xs text-muted">
-                {totalCount}/20 stocks · digest sent weekdays at 6:00 AM PDT
+                {zh
+                  ? `${totalCount}/20 支股票 · 每个工作日早上 6:00 PDT 发送`
+                  : `${totalCount}/20 stocks · digest sent weekdays at 6:00 AM PDT`}
               </p>
             )
           )}

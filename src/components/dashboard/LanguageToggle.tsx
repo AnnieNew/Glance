@@ -11,6 +11,7 @@ export default function LanguageToggle({ initialLanguage }: Props) {
   const [saved, setSaved] = useState(initialLanguage)
   const [pending, setPending] = useState(initialLanguage)
   const [saving, setSaving] = useState(false)
+  const zh = saved === 'zh'
 
   const isDirty = pending !== saved
 
@@ -28,7 +29,7 @@ export default function LanguageToggle({ initialLanguage }: Props) {
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '32px' }}>
-      <span className="text-sm text-zinc-400">Email language</span>
+      <span className="text-sm text-zinc-400">{zh ? '邮件语言' : 'Email language'}</span>
       <div style={{ display: 'flex', gap: '8px' }}>
         <Button
           variant={pending === 'en' ? 'primary' : 'ghost'}
@@ -45,7 +46,7 @@ export default function LanguageToggle({ initialLanguage }: Props) {
       </div>
       {isDirty && (
         <Button variant="ghost" disabled={saving} onClick={handleSave}>
-          {saving ? 'Saving…' : 'Save'}
+          {saving ? (zh ? '保存中…' : 'Saving…') : (zh ? '保存' : 'Save')}
         </Button>
       )}
     </div>

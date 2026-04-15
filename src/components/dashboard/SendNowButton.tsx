@@ -4,12 +4,14 @@ import { useState, useEffect } from 'react'
 
 interface Props {
   hasSubscriptions: boolean
+  language: string
 }
 
 type State = 'idle' | 'loading' | 'success' | 'error'
 
-export default function SendNowButton({ hasSubscriptions }: Props) {
+export default function SendNowButton({ hasSubscriptions, language }: Props) {
   const [state, setState] = useState<State>('idle')
+  const zh = language === 'zh'
 
   useEffect(() => {
     if (state !== 'success' && state !== 'error') return
@@ -28,10 +30,10 @@ export default function SendNowButton({ hasSubscriptions }: Props) {
   }
 
   const label =
-    state === 'loading' ? 'Sending…' :
-    state === 'success' ? 'Email sent ✓' :
-    state === 'error'   ? 'Something went wrong' :
-    'Send digest now'
+    state === 'loading' ? (zh ? '发送中…' : 'Sending…') :
+    state === 'success' ? (zh ? '邮件已发送 ✓' : 'Email sent ✓') :
+    state === 'error'   ? (zh ? '发送失败' : 'Something went wrong') :
+    (zh ? '立即发送摘要' : 'Send digest now')
 
   return (
     <div className="flex flex-col items-end gap-0.5">
@@ -43,7 +45,7 @@ export default function SendNowButton({ hasSubscriptions }: Props) {
         {label}
       </button>
       {!hasSubscriptions && (
-        <span className="text-[11px] text-muted-subtle">Add stocks first</span>
+        <span className="text-[11px] text-muted-subtle">{zh ? '请先添加股票' : 'Add stocks first'}</span>
       )}
     </div>
   )

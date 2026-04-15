@@ -7,9 +7,10 @@ interface Props {
   onAdd: (ticker: string, company: string) => void
   currentTickers: string[]
   atLimit: boolean
+  language: string
 }
 
-export default function StockSearch({ onAdd, currentTickers, atLimit }: Props) {
+export default function StockSearch({ onAdd, currentTickers, atLimit, language }: Props) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<StockSearchResult[]>([])
   const [open, setOpen] = useState(false)
@@ -17,6 +18,7 @@ export default function StockSearch({ onAdd, currentTickers, atLimit }: Props) {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLUListElement>(null)
+  const zh = language === 'zh'
 
   const search = useCallback(async (q: string) => {
     if (!q.trim()) { setResults([]); setOpen(false); return }
@@ -59,6 +61,10 @@ export default function StockSearch({ onAdd, currentTickers, atLimit }: Props) {
     inputRef.current?.focus()
   }
 
+  const placeholder = atLimit
+    ? (zh ? '请先删除一支股票再添加' : 'Remove a stock to add another')
+    : (zh ? '搜索股票 — 试试 AAPL 或 000001.SZ' : 'Search stocks — try "Apple" or "AAPL"')
+
   return (
     <div className="relative">
       <input
@@ -67,13 +73,13 @@ export default function StockSearch({ onAdd, currentTickers, atLimit }: Props) {
         value={query}
         onChange={e => setQuery(e.target.value)}
         onFocus={() => results.length > 0 && setOpen(true)}
-        placeholder={atLimit ? 'Remove a stock to add another' : 'Search stocks — try "Apple" or "AAPL"'}
+        placeholder={placeholder}
         disabled={atLimit}
         className="w-full border border-border rounded-lg px-3 py-2 text-sm outline-none focus:border-border-strong transition-colors bg-background text-foreground disabled:opacity-50"
       />
       {loading && (
         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-subtle">
-          searching…
+          {zh ? '搜索中…' : 'searching…'}
         </span>
       )}
 
@@ -97,7 +103,7 @@ export default function StockSearch({ onAdd, currentTickers, atLimit }: Props) {
                     <span className="text-muted ml-2">{r.company}</span>
                   </span>
                   {alreadyAdded && (
-                    <span className="text-xs text-muted-subtle">Added</span>
+                    <span className="text-xs text-muted-subtle">{zh ? '已添加' : 'Added'}</span>
                   )}
                 </button>
               </li>

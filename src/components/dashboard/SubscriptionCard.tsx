@@ -8,6 +8,7 @@ interface Props {
   removing: boolean
   pendingRemove?: boolean
   isPendingAdd?: boolean
+  language?: string
 }
 
 export default function SubscriptionCard({
@@ -16,7 +17,10 @@ export default function SubscriptionCard({
   removing,
   pendingRemove,
   isPendingAdd,
+  language = 'en',
 }: Props) {
+  const zh = language === 'zh'
+
   return (
     <div className={`border rounded-lg px-4 py-3 flex items-center justify-between transition-colors ${
       pendingRemove
@@ -28,7 +32,7 @@ export default function SubscriptionCard({
           <span className="font-mono font-semibold text-sm">{subscription.ticker}</span>
           {isPendingAdd && (
             <span className="text-[10px] text-muted border border-border rounded px-1 py-0.5 leading-none">
-              unsaved
+              {zh ? '未保存' : 'unsaved'}
             </span>
           )}
         </div>
@@ -41,7 +45,7 @@ export default function SubscriptionCard({
           className="text-xs text-muted hover:text-foreground transition-colors pl-3"
           aria-label={`Cancel removing ${subscription.ticker}`}
         >
-          undo
+          {zh ? '撤销' : 'undo'}
         </button>
       ) : (
         <button

@@ -7,6 +7,14 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   if (!user) redirect('/login')
 
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('language')
+    .eq('id', user.id)
+    .single()
+
+  const zh = profile?.language === 'zh'
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b border-border px-6 py-4 flex items-center justify-between">
@@ -16,7 +24,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
             type="submit"
             className="text-sm text-muted hover:text-foreground transition-colors"
           >
-            Sign out
+            {zh ? '退出登录' : 'Sign out'}
           </button>
         </form>
       </header>
