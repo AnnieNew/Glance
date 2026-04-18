@@ -4,7 +4,12 @@ import { NextRequest } from 'next/server'
 
 export const runtime = 'edge'
 
-type Entry = { ticker: string; company: string; insight: string }
+type Entry = {
+  ticker: string
+  company: string
+  insight: string
+  priceChange?: { price: number; change: number; changePercent: number }
+}
 
 function CardLayout({ entries, date }: { entries: Entry[]; date: string }) {
   const visible = entries.slice(0, 7)
@@ -42,9 +47,18 @@ function CardLayout({ entries, date }: { entries: Entry[]; date: string }) {
               borderBottom: i < visible.length - 1 ? '2px solid #f4f4f5' : 'none',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '24px', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '24px', marginBottom: '20px', flexWrap: 'wrap' }}>
               <span style={{ fontSize: '52px', fontWeight: 'bold', color: '#09090b' }}>{entry.ticker}</span>
               <span style={{ fontSize: '44px', color: '#71717a' }}>{entry.company}</span>
+              {entry.priceChange && (
+                <span style={{ fontSize: '44px', display: 'flex', gap: '16px' }}>
+                  <span style={{ color: '#71717a' }}>${entry.priceChange.price.toFixed(2)}</span>
+                  <span style={{ color: entry.priceChange.change >= 0 ? '#16a34a' : '#dc2626' }}>
+                    {entry.priceChange.change >= 0 ? '+' : ''}{entry.priceChange.change.toFixed(2)}
+                    {' '}({entry.priceChange.change >= 0 ? '+' : ''}{entry.priceChange.changePercent.toFixed(2)}%)
+                  </span>
+                </span>
+              )}
             </div>
             <span style={{ fontSize: '44px', color: '#27272a', lineHeight: '1.6' }}>{entry.insight}</span>
           </div>

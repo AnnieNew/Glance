@@ -1,5 +1,6 @@
 import pLimit from 'p-limit'
 import { getCompanyNews, getQuote } from './finnhub'
+import { getCompanyNews as newsdataGetCompanyNews } from './newsdata'
 import { summarizeNewsForUser } from './anthropic'
 import { sendDigestEmail } from './resend'
 import { TickerNews, DigestEntry } from '@/types'
@@ -56,10 +57,14 @@ export async function runDigestForUser(userId: string, source: 'cron' | 'manual'
     const tickerNews: TickerNews[] = await Promise.all(
       subs.map(s =>
         limit(async () => {
-          const [articles, quote] = await Promise.all([
+          const [finnhubArticles, quote] = await Promise.all([
             getCompanyNews(s.ticker, yesterday, today),
             getQuote(s.ticker),
           ])
+          console.log(`[digest] ${s.ticker}: finnhub=${finnhubArticles.length} article(s)`)
+          const articles = finnhubArticles.length > 0
+            ? finnhubArticles
+            : (console.log(`[digest] ${s.ticker}: falling back to newsdata`), await newsdataGetCompanyNews(s.ticker, s.company))
           quoteMap.set(s.ticker, quote)
           return { ticker: s.ticker, company: s.company, articles }
         })
@@ -180,10 +185,14 @@ export async function runDailyDigest() {
   await Promise.all(
     [...globalTickerMap.entries()].map(([ticker, company]) =>
       finnhubLimit(async () => {
-        const [articles, quote] = await Promise.all([
+        const [finnhubArticles, quote] = await Promise.all([
           getCompanyNews(ticker, yesterday, today),
           getQuote(ticker),
         ])
+        console.log(`[digest] ${ticker}: finnhub=${finnhubArticles.length} article(s)`)
+        const articles = finnhubArticles.length > 0
+          ? finnhubArticles
+          : await newsdataGetCompanyNews(ticker, company)
         newsMap.set(ticker, { ticker, company, articles })
         quoteMap.set(ticker, quote)
       })
