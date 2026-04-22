@@ -71,8 +71,25 @@ export async function runDigestForUser(userId: string, source: 'cron' | 'manual'
       )
     )
 
+    // Fetch previous day context for delta detection
+    const previousInsights = new Map<string, string>()
+    const { data: prevLog } = await supabase
+      .from('digest_logs')
+      .select('entries')
+      .eq('user_id', userId)
+      .eq('status', 'sent')
+      .lt('sent_at', `${today}T00:00:00Z`)
+      .order('sent_at', { ascending: false })
+      .limit(1)
+      .single()
+    if (prevLog?.entries && Array.isArray(prevLog.entries)) {
+      for (const e of prevLog.entries as DigestEntry[]) {
+        previousInsights.set(e.ticker, e.insight)
+      }
+    }
+
     // Summarize with Claude (one call per user)
-    const rawEntries = await summarizeNewsForUser(tickerNews, language)
+    const rawEntries = await summarizeNewsForUser(tickerNews, language, previousInsights)
     const entries = rawEntries.map(e => ({
       ...e,
       priceChange: quoteMap.get(e.ticker) ?? undefined,
@@ -119,14 +136,18 @@ export async function runDailyDigest() {
   const today = todayDateString()
   const yesterday = yesterdayDateString()
 
-  // Phase 1: 3 parallel DB queries
-  const [subsResult, profilesResult, logsResult] = await Promise.all([
+  // Phase 1: 4 parallel DB queries (added previous day entries for delta detection)
+  const [subsResult, profilesResult, logsResult, prevEntriesResult] = await Promise.all([
     supabase.from('subscriptions').select('user_id, ticker, company'),
     supabase.from('profiles').select('id, email, language'),
     supabase.from('digest_logs').select('user_id')
       .eq('source', 'cron')
       .gte('sent_at', `${today}T00:00:00Z`)
       .lte('sent_at', `${today}T23:59:59Z`),
+    supabase.from('digest_logs').select('entries')
+      .eq('status', 'sent')
+      .gte('sent_at', `${yesterday}T00:00:00Z`)
+      .lt('sent_at', `${today}T00:00:00Z`),
   ])
 
   if (subsResult.error) throw subsResult.error
@@ -199,6 +220,17 @@ export async function runDailyDigest() {
     )
   )
 
+  // Build previous day insights for delta detection
+  const previousInsights = new Map<string, string>()
+  const prevRows = prevEntriesResult.data ?? []
+  for (const row of prevRows) {
+    if (row.entries && Array.isArray(row.entries)) {
+      for (const e of row.entries as DigestEntry[]) {
+        if (e.ticker && e.insight) previousInsights.set(e.ticker, e.insight)
+      }
+    }
+  }
+
   // Phase 3b: Call Claude once per language group
   const insightMap = new Map<string, DigestEntry>() // key: `${ticker}:${language}`
   await Promise.all(
@@ -208,7 +240,7 @@ export async function runDailyDigest() {
         const tickerNewsBatch: TickerNews[] = [...tickersByLang[lang].keys()]
           .map(ticker => newsMap.get(ticker)!)
           .filter(Boolean)
-        const entries = await summarizeNewsForUser(tickerNewsBatch, lang)
+        const entries = await summarizeNewsForUser(tickerNewsBatch, lang, previousInsights)
         for (const e of entries) insightMap.set(`${e.ticker}:${lang}`, e)
       })
   )
