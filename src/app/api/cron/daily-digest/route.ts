@@ -2,7 +2,6 @@ import { runDailyDigest } from '@/lib/digest'
 import { NextRequest, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
-export const maxDuration = 300 // 5 minutes
 
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get('authorization')

@@ -2,8 +2,6 @@ import { ImageResponse } from 'next/og'
 import { getAdminClient } from '@/lib/supabase/admin'
 import { NextRequest } from 'next/server'
 
-export const runtime = 'edge'
-
 type Entry = {
   ticker: string
   company: string
