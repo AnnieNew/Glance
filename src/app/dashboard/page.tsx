@@ -3,6 +3,7 @@ import { Subscription } from '@/types'
 import SubscriptionList from '@/components/dashboard/SubscriptionList'
 import LanguageToggle from '@/components/dashboard/LanguageToggle'
 import SendNowButton from '@/components/dashboard/SendNowButton'
+import PauseButton from '@/components/dashboard/PauseButton'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -16,12 +17,13 @@ export default async function DashboardPage() {
       .order('created_at', { ascending: false }),
     supabase
       .from('profiles')
-      .select('language')
+      .select('language, paused')
       .eq('id', user!.id)
       .single(),
   ])
 
   const language = profile?.language ?? 'en'
+  const paused = profile?.paused ?? false
   const zh = language === 'zh'
 
   return (
@@ -37,6 +39,7 @@ export default async function DashboardPage() {
       </div>
       <SubscriptionList initialSubscriptions={(subscriptions as Subscription[]) ?? []} language={language} />
       <LanguageToggle initialLanguage={language} />
+      <PauseButton initialPaused={paused} language={language} />
     </main>
   )
 }

@@ -139,7 +139,7 @@ export async function runDailyDigest() {
   // Phase 1: 4 parallel DB queries (added previous day entries for delta detection)
   const [subsResult, profilesResult, logsResult, prevEntriesResult] = await Promise.all([
     supabase.from('subscriptions').select('user_id, ticker, company'),
-    supabase.from('profiles').select('id, email, language'),
+    supabase.from('profiles').select('id, email, language').eq('paused', false),
     supabase.from('digest_logs').select('user_id')
       .eq('source', 'cron')
       .gte('sent_at', `${today}T00:00:00Z`)
