@@ -6,7 +6,7 @@ export default function SignupPage() {
       <div className="w-full max-w-sm">
         <div className="mb-8">
           <h1 className="text-2xl font-semibold tracking-tight">Glance.</h1>
-          <p className="text-sm text-zinc-400 mt-1">Create your account</p>
+          <p className="text-sm text-zinc-400 mt-1">Enter your email to get started</p>
         </div>
         <SignupForm />
       </div>
