@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
 import { Subscription } from '@/types'
 import SubscriptionList from '@/components/dashboard/SubscriptionList'
 import LanguageToggle from '@/components/dashboard/LanguageToggle'
@@ -17,10 +18,12 @@ export default async function DashboardPage() {
       .order('created_at', { ascending: false }),
     supabase
       .from('profiles')
-      .select('language, paused')
+      .select('language, paused, nickname')
       .eq('id', user!.id)
       .single(),
   ])
+
+  if (!profile?.nickname) redirect('/onboarding')
 
   const language = profile?.language ?? 'en'
   const paused = profile?.paused ?? false
