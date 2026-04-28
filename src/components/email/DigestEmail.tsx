@@ -15,6 +15,7 @@ interface Props {
   appUrl: string
   language?: string
   token?: string
+  nickname?: string
 }
 
 const EVENT_LABELS: Record<string, Record<string, string>> = {
@@ -139,12 +140,18 @@ export default function DigestEmail({
   appUrl = 'https://glance.app',
   language = 'en',
   token = '',
+  nickname,
 }: Props) {
   return (
     <Html>
       <Head />
       <Body style={{ backgroundColor: '#ffffff', fontFamily: FONT, margin: 0, padding: 0 }}>
         <Container style={{ maxWidth: '520px', margin: '0 auto', padding: '40px 20px', fontFamily: FONT }}>
+          {nickname && (
+            <Text style={{ fontFamily: FONT, fontSize: '14px', color: '#27272a', margin: '0 0 12px' }}>
+              {language === 'zh' ? `${nickname}，早上好` : `Hi ${nickname},`}
+            </Text>
+          )}
           <Text style={{ fontFamily: FONT, fontSize: '18px', fontWeight: 'bold', margin: '0 0 4px' }}>
             Glance.
           </Text>

@@ -36,13 +36,14 @@ export async function runDigestForUser(userId: string, source: 'cron' | 'manual'
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('email, language')
+      .select('email, language, nickname')
       .eq('id', userId)
       .single()
 
     if (!profile?.email) return 'skipped'
 
     const language = profile.language ?? 'en'
+    const nickname = profile.nickname ?? undefined
 
     const { data: subs } = await supabase
       .from('subscriptions')
@@ -107,7 +108,7 @@ export async function runDigestForUser(userId: string, source: 'cron' | 'manual'
       .select('token')
       .single()
 
-    await sendDigestEmail(profile.email, entries, dateLabel, language, logRow?.token ?? '')
+    await sendDigestEmail(profile.email, entries, dateLabel, language, logRow?.token ?? '', nickname)
 
     return 'sent'
   } catch (err) {
@@ -128,6 +129,7 @@ interface UserRecord {
   userId: string
   email: string
   language: 'en' | 'zh'
+  nickname?: string
   tickers: { ticker: string; company: string }[]
 }
 
@@ -139,7 +141,7 @@ export async function runDailyDigest() {
   // Phase 1: 4 parallel DB queries (added previous day entries for delta detection)
   const [subsResult, profilesResult, logsResult, prevEntriesResult] = await Promise.all([
     supabase.from('subscriptions').select('user_id, ticker, company'),
-    supabase.from('profiles').select('id, email, language').eq('paused', false),
+    supabase.from('profiles').select('id, email, language, nickname').eq('paused', false),
     supabase.from('digest_logs').select('user_id')
       .eq('source', 'cron')
       .gte('sent_at', `${today}T00:00:00Z`)
@@ -159,7 +161,7 @@ export async function runDailyDigest() {
 
   // Phase 2: Filter users, split by language
   const profileMap = new Map(
-    profileRows.map(p => [p.id, { email: p.email as string, language: (p.language ?? 'en') as 'en' | 'zh' }])
+    profileRows.map(p => [p.id, { email: p.email as string, language: (p.language ?? 'en') as 'en' | 'zh', nickname: p.nickname as string | undefined }])
   )
   const alreadySent = new Set(logRows.map(r => r.user_id))
 
@@ -175,7 +177,7 @@ export async function runDailyDigest() {
     if (alreadySent.has(userId)) continue
     const profile = profileMap.get(userId)
     if (!profile?.email) continue
-    activeUsers.push({ userId, email: profile.email, language: profile.language, tickers })
+    activeUsers.push({ userId, email: profile.email, language: profile.language, nickname: profile.nickname, tickers })
   }
 
   const totalUsersWithSubs = new Set(subRows.map(r => r.user_id)).size
@@ -277,7 +279,7 @@ export async function runDailyDigest() {
 
           if (logErr) throw logErr
 
-          await sendDigestEmail(user.email, entries, dateLabel, user.language, logRow?.token ?? '')
+          await sendDigestEmail(user.email, entries, dateLabel, user.language, logRow?.token ?? '', user.nickname)
           sent++
         } catch (err) {
           console.error(`Digest failed for user ${user.userId}:`, err)
