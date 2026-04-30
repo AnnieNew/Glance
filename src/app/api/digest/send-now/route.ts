@@ -9,7 +9,9 @@ export async function POST() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const result = await runDigestForUser(user.id, 'manual')
-  if (result === 'failed') return NextResponse.json({ error: 'Digest failed' }, { status: 500 })
+  // Fire-and-forget — return immediately, let digest run in background
+  runDigestForUser(user.id, 'manual').catch(err =>
+    console.error(`Background digest failed for user ${user.id}:`, err)
+  )
   return NextResponse.json({ ok: true })
 }

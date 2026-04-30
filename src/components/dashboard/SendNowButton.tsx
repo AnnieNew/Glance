@@ -30,8 +30,8 @@ export default function SendNowButton({ hasSubscriptions, language }: Props) {
   }
 
   const label =
-    state === 'loading' ? (zh ? '发送中…' : 'Sending…') :
-    state === 'success' ? (zh ? '邮件已发送 ✓' : 'Email sent ✓') :
+    state === 'loading' ? (zh ? '处理中…' : 'Processing…') :
+    state === 'success' ? (zh ? '摘要发送中 ✓' : 'On its way ✓') :
     state === 'error'   ? (zh ? '发送失败' : 'Something went wrong') :
     (zh ? '立即发送摘要' : 'Send digest now')
 
