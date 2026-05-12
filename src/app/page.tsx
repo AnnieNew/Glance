@@ -5,7 +5,7 @@ export default function LandingPage() {
     <main className="min-h-screen flex flex-col bg-background text-foreground">
       {/* Nav */}
       <nav className="px-6 py-5 flex items-center justify-between">
-        <span className="font-semibold tracking-tight">Glance.</span>
+        <span className="font-serif italic text-xl wordmark">Glance.</span>
         <Link
           href="/login"
           className="text-sm text-muted hover:text-foreground transition-colors"
@@ -16,7 +16,7 @@ export default function LandingPage() {
 
       {/* Hero */}
       <section className="flex-1 flex flex-col justify-center px-6 pb-24 max-w-lg">
-        <h1 className="text-4xl font-semibold tracking-tight leading-tight mb-4">
+        <h1 className="font-serif italic text-5xl tracking-tight leading-tight mb-4">
           Your stocks.<br />One signal.<br />Every morning.
         </h1>
         <p className="text-muted text-base leading-relaxed mb-8 max-w-sm">
