@@ -23,6 +23,17 @@ export async function getQuote(ticker: string): Promise<{ price: number; change:
   return { price: data.c, change: data.d, changePercent: data.dp }
 }
 
+export async function getHistoricalClose(ticker: string, date: Date): Promise<number | null> {
+  // Search a 4-day window starting at date to handle weekends/holidays
+  const from = Math.floor(date.getTime() / 1000)
+  const to = Math.floor((date.getTime() + 4 * 24 * 60 * 60 * 1000) / 1000)
+  const res = await fetch(`${BASE}/stock/candle?symbol=${ticker}&resolution=D&from=${from}&to=${to}&token=${KEY}`)
+  if (!res.ok) return null
+  const data = await res.json()
+  if (data.s !== 'ok' || !Array.isArray(data.c) || data.c.length === 0) return null
+  return data.c[0] // first available close on or after date
+}
+
 export async function getCompanyNews(ticker: string, from: string, to: string) {
   const res = await fetch(
     `${BASE}/company-news?symbol=${ticker}&from=${from}&to=${to}&token=${KEY}`

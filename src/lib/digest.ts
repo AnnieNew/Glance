@@ -3,6 +3,7 @@ import { getCompanyNews, getQuote } from './finnhub'
 import { getCompanyNews as newsdataGetCompanyNews } from './newsdata'
 import { summarizeNewsForUser } from './anthropic'
 import { sendDigestEmail } from './resend'
+import { insertPredictions } from './predictions'
 import { TickerNews, DigestEntry } from '@/types'
 import { getAdminClient } from './supabase/admin'
 
@@ -105,10 +106,11 @@ export async function runDigestForUser(userId: string, source: 'cron' | 'manual'
     const { data: logRow } = await supabase
       .from('digest_logs')
       .insert({ user_id: userId, ticker_count: entries.length, status: 'sent', source, entries })
-      .select('token')
+      .select('id, token')
       .single()
 
     await sendDigestEmail(profile.email, entries, dateLabel, language, logRow?.token ?? '', nickname)
+    if (logRow?.id) insertPredictions(logRow.id, entries, new Date()).catch(() => {})
 
     return 'sent'
   } catch (err) {
@@ -274,12 +276,13 @@ export async function runDailyDigest() {
           const { data: logRow, error: logErr } = await supabase
             .from('digest_logs')
             .insert({ user_id: user.userId, ticker_count: entries.length, status: 'sent', source: 'cron', entries })
-            .select('token')
+            .select('id, token')
             .single()
 
           if (logErr) throw logErr
 
           await sendDigestEmail(user.email, entries, dateLabel, user.language, logRow?.token ?? '', user.nickname)
+          if (logRow?.id) insertPredictions(logRow.id, entries, new Date()).catch(() => {})
           sent++
         } catch (err) {
           console.error(`Digest failed for user ${user.userId}:`, err)

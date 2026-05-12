@@ -1,5 +1,6 @@
 import { getAdminClient } from '@/lib/supabase/admin'
 import Charts from './Charts'
+import PredictionStats from './PredictionStats'
 
 export default async function AdminPage() {
   const supabase = getAdminClient()
@@ -19,6 +20,7 @@ export default async function AdminPage() {
     { data: allSubscriptions },
     { data: tickerStats },
     { data: comments },
+    { data: predictions },
   ] = await Promise.all([
     supabase.from('profiles').select('*', { count: 'exact', head: true }),
     supabase.from('subscriptions').select('*', { count: 'exact', head: true }),
@@ -54,6 +56,9 @@ export default async function AdminPage() {
       .not('comment', 'is', null)
       .order('created_at', { ascending: false })
       .limit(100),
+    supabase
+      .from('prediction_outcomes')
+      .select('sentiment, price_at_send, t1_close, t3_close, t5_close'),
   ])
 
   // Derived stats
@@ -123,6 +128,9 @@ export default async function AdminPage() {
         growthByDay={growthByDay}
         tickersByDay={tickersByDay}
       />
+
+      {/* Prediction accuracy */}
+      <PredictionStats predictions={(predictions ?? []) as { sentiment: 'bullish' | 'bearish'; price_at_send: number; t1_close: number | null; t3_close: number | null; t5_close: number | null }[]} />
 
       {/* User comments */}
       <div>
