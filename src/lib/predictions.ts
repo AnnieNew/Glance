@@ -1,5 +1,5 @@
 import { getAdminClient } from './supabase/admin'
-import { getHistoricalClose } from './finnhub'
+import { getQuote } from './finnhub'
 import { DigestEntry } from '@/types'
 
 export async function insertPredictions(logId: string, entries: DigestEntry[], sentAt: Date) {
@@ -45,8 +45,8 @@ export async function evaluatePendingPredictions() {
         if (row[key] !== null) continue // already evaluated
         const targetTime = sentAt + n * MS_PER_DAY
         if (now < targetTime) continue // not yet time to evaluate
-        const close = await getHistoricalClose(row.ticker, new Date(targetTime))
-        update[key] = close
+        const quote = await getQuote(row.ticker)
+        update[key] = quote?.price ?? null
       }
 
       if (Object.keys(update).length > 0) {
