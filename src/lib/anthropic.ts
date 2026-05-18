@@ -167,7 +167,7 @@ ${newsBlock}`
   const fallback = fallbackPhrase
   return tickerNews.map(t => {
     const r = resultMap.get(t.ticker)
-    const insight = r?.insight ?? fallback
+    const insight = (r?.insight ?? fallback).trim()
     const citedIndices = (r?.citations ?? []).map(n => n - 1)
     const sources = insight === fallback || citedIndices.length === 0
       ? []
