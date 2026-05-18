@@ -21,6 +21,8 @@ export default async function AdminPage() {
     { data: tickerStats },
     { data: comments },
     { data: predictions },
+    { count: guestToday },
+    { count: guestTotal },
   ] = await Promise.all([
     supabase.from('profiles').select('*', { count: 'exact', head: true }),
     supabase.from('subscriptions').select('*', { count: 'exact', head: true }),
@@ -59,6 +61,14 @@ export default async function AdminPage() {
     supabase
       .from('prediction_outcomes')
       .select('sentiment, price_at_send, t1_close, t3_close, t5_close'),
+    supabase
+      .from('guest_digest_logs')
+      .select('*', { count: 'exact', head: true })
+      .gte('sent_at', `${today}T00:00:00`)
+      .lte('sent_at', `${today}T23:59:59`),
+    supabase
+      .from('guest_digest_logs')
+      .select('*', { count: 'exact', head: true }),
   ])
 
   // Derived stats
@@ -108,6 +118,12 @@ export default async function AdminPage() {
           value={`${goodCount} 👍 / ${badCount} 👎`}
           valueClassName="text-lg"
         />
+      </div>
+
+      {/* Guest stats row */}
+      <div className="grid grid-cols-2 gap-4">
+        <StatCard label="Guest digests today" value={guestToday ?? 0} />
+        <StatCard label="Guest digests all-time" value={guestTotal ?? 0} />
       </div>
 
       {/* Cron status banner */}
