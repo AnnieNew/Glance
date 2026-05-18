@@ -4,14 +4,8 @@ export default function LandingPage() {
   return (
     <main className="min-h-screen flex flex-col bg-background text-foreground">
       {/* Nav */}
-      <nav className="px-6 py-5 flex items-center justify-between">
+      <nav className="px-6 py-5">
         <span className="font-serif italic text-xl wordmark">Glance.</span>
-        <Link
-          href="/login"
-          className="text-sm text-muted hover:text-foreground transition-colors"
-        >
-          Sign in
-        </Link>
       </nav>
 
       {/* Hero */}
@@ -24,16 +18,16 @@ export default function LandingPage() {
         </p>
         <div className="flex items-center gap-3">
           <Link
-            href="/signup"
+            href="/login"
             className="bg-foreground text-background rounded-lg px-5 py-2.5 text-sm font-medium hover:opacity-80 transition-opacity"
           >
-            Get started free
+            Sign in / Sign up
           </Link>
           <Link
-            href="/login"
+            href="/guest"
             className="border border-border text-muted rounded-lg px-5 py-2.5 text-sm font-medium hover:border-border-strong hover:text-foreground transition-colors"
           >
-            Sign in
+            Continue as Guest
           </Link>
         </div>
       </section>
@@ -41,7 +35,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="px-6 py-5 border-t border-border">
         <p className="text-xs text-muted-subtle">
-          Powered by Claude · Delivered at 7:00 AM UTC
+          Delivered at 6:00 AM PDT
         </p>
       </footer>
     </main>
