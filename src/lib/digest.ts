@@ -3,7 +3,7 @@ import { getCompanyNews, getQuote } from './finnhub'
 import { getCompanyNews as newsdataGetCompanyNews } from './newsdata'
 import { summarizeNewsForUser } from './anthropic'
 import { sendDigestEmail } from './resend'
-import { insertPredictions } from './predictions'
+import { insertPredictions, evaluatePendingPredictions } from './predictions'
 import { TickerNews, DigestEntry } from '@/types'
 import { getAdminClient } from './supabase/admin'
 
@@ -298,6 +298,11 @@ export async function runDailyDigest() {
   )
 
   skipped += totalUsersWithSubs - activeUsers.length - failed
+
+  // Evaluate pending predictions using today's already-fetched prices
+  evaluatePendingPredictions(quoteMap).catch(err =>
+    console.error('Prediction evaluation failed:', err)
+  )
 
   return { sent, skipped, failed }
 }

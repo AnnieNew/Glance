@@ -1,5 +1,4 @@
 import { runDailyDigest } from '@/lib/digest'
-import { evaluatePendingPredictions } from '@/lib/predictions'
 import { NextRequest, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
@@ -12,7 +11,6 @@ export async function GET(request: NextRequest) {
 
   try {
     const result = await runDailyDigest()
-    evaluatePendingPredictions().catch(err => console.error('Prediction evaluation failed:', err))
     return NextResponse.json(result)
   } catch (err) {
     console.error('Cron failed:', err)

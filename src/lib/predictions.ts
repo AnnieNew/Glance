@@ -20,11 +20,13 @@ export async function insertPredictions(logId: string, entries: DigestEntry[], s
     .upsert(rows, { onConflict: 'digest_log_id,ticker' })
 }
 
-export async function evaluatePendingPredictions() {
+// priceMap: today's already-fetched prices from the digest run — avoids redundant Finnhub calls
+export async function evaluatePendingPredictions(
+  priceMap: Map<string, { price: number } | null> = new Map()
+) {
   const supabase = getAdminClient()
   const now = Date.now()
 
-  // Fetch all rows with any missing close
   const { data: pending } = await supabase
     .from('prediction_outcomes')
     .select('id, ticker, sent_at, t1_close, t3_close, t5_close')
@@ -42,11 +44,14 @@ export async function evaluatePendingPredictions() {
 
       for (const n of DAYS) {
         const key = `t${n}_close` as 't1_close' | 't3_close' | 't5_close'
-        if (row[key] !== null) continue // already evaluated
-        const targetTime = sentAt + n * MS_PER_DAY
-        if (now < targetTime) continue // not yet time to evaluate
-        const quote = await getQuote(row.ticker)
-        update[key] = quote?.price ?? null
+        if (row[key] !== null) continue
+        if (now < sentAt + n * MS_PER_DAY) continue
+
+        // Use today's digest price if available, otherwise fetch from Finnhub
+        const price = priceMap.has(row.ticker)
+          ? (priceMap.get(row.ticker)?.price ?? null)
+          : ((await getQuote(row.ticker))?.price ?? null)
+        update[key] = price
       }
 
       if (Object.keys(update).length > 0) {
