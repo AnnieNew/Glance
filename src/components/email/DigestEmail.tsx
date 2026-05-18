@@ -230,16 +230,27 @@ export default function DigestEmail({
               </Link>
             </Text>
           )}
-          <Text style={{ fontFamily: FONT, fontSize: '11px', color: '#a1a1aa', margin: 0 }}>
-            {language === 'zh' ? '管理您的股票订阅：' : 'Manage your stocks at'}{' '}
-            <Link href={`${appUrl}/dashboard`} style={{ color: '#a1a1aa' }}>
-              {appUrl}
-            </Link>
-            {' · '}
-            <Link href={`${appUrl}/unsubscribe`} style={{ color: '#a1a1aa' }}>
-              {language === 'zh' ? '取消订阅' : 'Unsubscribe'}
-            </Link>
-          </Text>
+          {token ? (
+            <Text style={{ fontFamily: FONT, fontSize: '11px', color: '#a1a1aa', margin: 0 }}>
+              {language === 'zh' ? '管理您的股票订阅：' : 'Manage your stocks at'}{' '}
+              <Link href={`${appUrl}/dashboard`} style={{ color: '#a1a1aa' }}>
+                {appUrl}
+              </Link>
+              {' · '}
+              <Link href={`${appUrl}/unsubscribe?token=${token}`} style={{ color: '#a1a1aa' }}>
+                {language === 'zh' ? '取消订阅' : 'Unsubscribe'}
+              </Link>
+            </Text>
+          ) : (
+            <Text style={{ fontFamily: FONT, fontSize: '11px', color: '#a1a1aa', margin: 0 }}>
+              {language === 'zh'
+                ? '这是您在 Glance 请求的一次性摘要。'
+                : 'This is a one-time digest you requested at Glance.'}{' '}
+              <Link href={`${appUrl}/login`} style={{ color: '#a1a1aa' }}>
+                {language === 'zh' ? '注册以获取每日推送 →' : 'Sign up for daily digests →'}
+              </Link>
+            </Text>
+          )}
         </Container>
       </Body>
     </Html>
