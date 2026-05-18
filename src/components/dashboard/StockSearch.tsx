@@ -88,10 +88,10 @@ export default function StockSearch({ onAdd, currentTickers, atLimit, language }
           ref={listRef}
           className="absolute z-10 mt-1 w-full bg-background border border-border rounded-lg shadow-sm overflow-hidden"
         >
-          {results.map(r => {
+          {results.map((r, i) => {
             const alreadyAdded = currentTickers.includes(r.ticker)
             return (
-              <li key={r.ticker}>
+              <li key={`${r.ticker}-${i}`}>
                 <button
                   type="button"
                   onClick={() => handleSelect(r)}

@@ -99,6 +99,19 @@ export default function LoginForm() {
         {loading ? 'Sending link…' : 'Send magic link'}
       </button>
     </form>
+
+      <div className="flex items-center gap-3">
+        <div className="flex-1 h-px bg-border" />
+        <span className="text-xs text-muted">or</span>
+        <div className="flex-1 h-px bg-border" />
+      </div>
+
+      <a
+        href="/guest"
+        className="w-full flex items-center justify-center border border-border rounded-lg px-4 py-2 text-sm text-foreground hover:bg-border transition-colors"
+      >
+        Continue as Guest
+      </a>
     </div>
   )
 }
