@@ -33,9 +33,12 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="px-6 py-5 border-t border-border">
+      <footer className="px-6 py-5 border-t border-border space-y-1">
         <p className="text-xs text-muted-subtle">
           Delivered at 6:00 AM PDT
+        </p>
+        <p className="text-xs text-muted-subtle">
+          For informational purposes only. Not investment advice.
         </p>
       </footer>
     </main>

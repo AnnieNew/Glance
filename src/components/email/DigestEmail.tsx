@@ -230,6 +230,12 @@ export default function DigestEmail({
               </Link>
             </Text>
           )}
+          <Text style={{ fontFamily: FONT, fontSize: '11px', color: '#a1a1aa', margin: '0 0 8px' }}>
+            {language === 'zh'
+              ? '本内容仅供参考，不构成投资建议。'
+              : 'For informational purposes only. Not investment advice.'}
+          </Text>
+
           {token ? (
             <Text style={{ fontFamily: FONT, fontSize: '11px', color: '#a1a1aa', margin: 0 }}>
               {language === 'zh' ? '管理您的股票订阅：' : 'Manage your stocks at'}{' '}
