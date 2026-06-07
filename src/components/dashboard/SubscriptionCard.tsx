@@ -30,6 +30,9 @@ export default function SubscriptionCard({
       <div>
         <div className="flex items-center gap-2">
           <span className="font-mono font-semibold text-sm">{subscription.ticker}</span>
+          {subscription.asset_type === 'etf' && (
+            <span className="text-[10px] text-muted border border-border rounded px-1 py-0.5 leading-none">ETF</span>
+          )}
           {isPendingAdd && (
             <span className="text-[10px] text-muted border border-border rounded px-1 py-0.5 leading-none">
               {zh ? '未保存' : 'unsaved'}

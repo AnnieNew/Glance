@@ -12,7 +12,7 @@ interface Props {
 
 export default function SubscriptionList({ initialSubscriptions, language = 'en' }: Props) {
   const [subscriptions, setSubscriptions] = useState(initialSubscriptions)
-  const [pendingAdds, setPendingAdds] = useState<{ ticker: string; company: string }[]>([])
+  const [pendingAdds, setPendingAdds] = useState<{ ticker: string; company: string; asset_type?: 'etf' | 'stock' }[]>([])
   const [pendingRemoves, setPendingRemoves] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
   const [savedAt, setSavedAt] = useState<number | null>(null)
@@ -28,12 +28,12 @@ export default function SubscriptionList({ initialSubscriptions, language = 'en'
     return () => clearTimeout(t)
   }, [savedAt])
 
-  function handleAdd(ticker: string, company: string) {
+  function handleAdd(ticker: string, company: string, asset_type?: 'etf' | 'stock') {
     if (
       subscriptions.some(s => s.ticker === ticker) ||
       pendingAdds.some(p => p.ticker === ticker)
     ) return
-    setPendingAdds(prev => [...prev, { ticker, company }])
+    setPendingAdds(prev => [...prev, { ticker, company, asset_type }])
   }
 
   function handleRemove(ticker: string) {
@@ -52,11 +52,11 @@ export default function SubscriptionList({ initialSubscriptions, language = 'en'
     setSaving(true)
     try {
       await Promise.all([
-        ...pendingAdds.map(({ ticker, company }) =>
+        ...pendingAdds.map(({ ticker, company, asset_type }) =>
           fetch('/api/subscriptions', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ticker, company }),
+            body: JSON.stringify({ ticker, company, asset_type }),
           })
         ),
         ...pendingRemoves.map(ticker =>
@@ -76,6 +76,7 @@ export default function SubscriptionList({ initialSubscriptions, language = 'en'
           user_id: '',
           ticker: p.ticker,
           company: p.company,
+          asset_type: p.asset_type ?? null,
           created_at: new Date().toISOString(),
         }))
         return [...added, ...withoutRemoved]
@@ -119,7 +120,7 @@ export default function SubscriptionList({ initialSubscriptions, language = 'en'
           {pendingAdds.map(p => (
             <SubscriptionCard
               key={`add-${p.ticker}`}
-              subscription={{ id: '', user_id: '', ticker: p.ticker, company: p.company, created_at: '' }}
+              subscription={{ id: '', user_id: '', ticker: p.ticker, company: p.company, asset_type: p.asset_type, created_at: '' }}
               onRemove={handleRemove}
               removing={false}
               isPendingAdd

@@ -6,10 +6,12 @@ export async function POST(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { ticker, company } = await request.json()
+  const { ticker, company, asset_type } = await request.json()
   if (!ticker || !company) {
     return NextResponse.json({ error: 'ticker and company are required' }, { status: 400 })
   }
+
+  const validatedAssetType = asset_type === 'etf' ? 'etf' : asset_type === 'stock' ? 'stock' : null
 
   // Enforce 20-ticker limit
   const { count } = await supabase
@@ -23,7 +25,7 @@ export async function POST(request: NextRequest) {
 
   const { data, error } = await supabase
     .from('subscriptions')
-    .insert({ user_id: user.id, ticker: ticker.toUpperCase(), company })
+    .insert({ user_id: user.id, ticker: ticker.toUpperCase(), company, asset_type: validatedAssetType })
     .select()
     .single()
 

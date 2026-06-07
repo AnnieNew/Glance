@@ -7,11 +7,12 @@ export async function searchSymbols(query: string) {
   const data = await res.json()
 
   return (data.result ?? [])
-    .filter((item: { type: string }) => item.type === 'Common Stock')
+    .filter((item: { type: string }) => item.type === 'Common Stock' || item.type === 'ETP')
     .slice(0, 8)
-    .map((item: { symbol: string; description: string }) => ({
+    .map((item: { symbol: string; description: string; type: string }) => ({
       ticker: item.symbol,
       company: item.description,
+      asset_type: item.type === 'ETP' ? 'etf' as const : 'stock' as const,
     }))
 }
 

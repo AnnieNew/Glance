@@ -46,7 +46,7 @@ describe('searchSymbols', () => {
       result: [{ symbol: 'AAPL', description: 'Apple Inc', type: 'Common Stock' }],
     }))
     const result = await searchSymbols('apple')
-    expect(result[0]).toEqual({ ticker: 'AAPL', company: 'Apple Inc' })
+    expect(result[0]).toEqual({ ticker: 'AAPL', company: 'Apple Inc', asset_type: 'stock' })
   })
 
   it('returns [] when response has no result key', async () => {

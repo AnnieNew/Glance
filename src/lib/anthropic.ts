@@ -125,6 +125,7 @@ Rules:
 - Always prefer concrete numbers over vague qualifiers — "fell 40%" not "declined sharply"
 - If no meaningful news for a ticker: insight = "${fallbackPhrase}", events = [], earlyWarnings = [], all mechanisms = "unclear", sentiment = "neutral"
 - Include ALL tickers listed below in your output, even those with no news
+- For ETFs (e.g. SPY, QQQ, VTI): focus on macro drivers, sector flows, and rate/policy impacts. Avoid earnings or guidance_change framing — use macro_impact, regulation, or other event types instead
 
 News:
 ${newsBlock}`

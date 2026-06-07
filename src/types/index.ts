@@ -3,12 +3,14 @@ export interface Subscription {
   user_id: string
   ticker: string
   company: string
+  asset_type?: 'stock' | 'etf' | null
   created_at: string
 }
 
 export interface StockSearchResult {
   ticker: string
   company: string
+  asset_type?: 'stock' | 'etf'
 }
 
 export type EventType =

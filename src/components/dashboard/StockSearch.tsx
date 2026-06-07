@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { StockSearchResult } from '@/types'
 
 interface Props {
-  onAdd: (ticker: string, company: string) => void
+  onAdd: (ticker: string, company: string, asset_type?: 'etf' | 'stock') => void
   currentTickers: string[]
   atLimit: boolean
   language: string
@@ -57,13 +57,13 @@ export default function StockSearch({ onAdd, currentTickers, atLimit, language }
     if (currentTickers.includes(result.ticker)) return
     setOpen(false)
     setQuery('')
-    onAdd(result.ticker, result.company)
+    onAdd(result.ticker, result.company, result.asset_type)
     inputRef.current?.focus()
   }
 
   const placeholder = atLimit
     ? (zh ? '请先删除一支股票再添加' : 'Remove a stock to add another')
-    : (zh ? '搜索股票 — 试试 AAPL 或 000001.SZ' : 'Search stocks — try "Apple" or "AAPL"')
+    : (zh ? '搜索股票或ETF — 试试 AAPL 或 SPY' : 'Search stocks & ETFs — try "Apple" or "SPY"')
 
   return (
     <div className="relative">
@@ -100,6 +100,9 @@ export default function StockSearch({ onAdd, currentTickers, atLimit, language }
                 >
                   <span>
                     <span className="font-mono font-semibold">{r.ticker}</span>
+                    {r.asset_type === 'etf' && (
+                      <span className="text-[10px] text-muted border border-border rounded px-1 py-0.5 leading-none ml-1">ETF</span>
+                    )}
                     <span className="text-muted ml-2">{r.company}</span>
                   </span>
                   {alreadyAdded && (
