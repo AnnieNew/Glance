@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
@@ -112,6 +113,13 @@ export default function LoginForm() {
       >
         Continue as Guest
       </a>
+
+      <p className="text-center text-xs text-muted leading-relaxed">
+        By continuing, you agree to our{' '}
+        <Link href="/terms" className="underline underline-offset-2 hover:text-foreground transition-colors">Terms of Service</Link>
+        {' '}and{' '}
+        <Link href="/privacy" className="underline underline-offset-2 hover:text-foreground transition-colors">Privacy Policy</Link>.
+      </p>
     </div>
   )
 }
