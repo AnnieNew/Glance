@@ -4,11 +4,16 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
-export default function LoginForm() {
+interface Props {
+  language?: 'en' | 'zh'
+}
+
+export default function LoginForm({ language = 'en' }: Props) {
   const [email, setEmail] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [done, setDone] = useState(false)
+  const zh = language === 'zh'
 
   async function handleGoogleSignIn() {
     const supabase = createClient()
@@ -45,8 +50,12 @@ export default function LoginForm() {
   if (done) {
     return (
       <div className="text-center space-y-2">
-        <p className="text-sm text-foreground">Check your email for a sign-in link.</p>
-        <p className="text-xs text-muted">You can close this tab.</p>
+        <p className="text-sm text-foreground">
+          {zh ? '请查收邮件，点击链接登录。' : 'Check your email for a sign-in link.'}
+        </p>
+        <p className="text-xs text-muted">
+          {zh ? '您可以关闭此标签页。' : 'You can close this tab.'}
+        </p>
       </div>
     )
   }
@@ -64,61 +73,74 @@ export default function LoginForm() {
           <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
           <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
         </svg>
-        Continue with Google
+        {zh ? '使用 Google 登录' : 'Continue with Google'}
       </button>
 
       <div className="flex items-center gap-3">
         <div className="flex-1 h-px bg-border" />
-        <span className="text-xs text-muted">or</span>
+        <span className="text-xs text-muted">{zh ? '或' : 'or'}</span>
         <div className="flex-1 h-px bg-border" />
       </div>
 
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label htmlFor="email" className="block text-sm text-muted mb-1">
-          Email
-        </label>
-        <input
-          id="email"
-          type="email"
-          required
-          autoComplete="email"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          className="w-full border border-border rounded-lg px-3 py-2 text-sm outline-none focus:border-border-strong transition-colors bg-background text-foreground"
-          placeholder="you@example.com"
-        />
-      </div>
-      {error && (
-        <p className="text-sm text-red-500">{error}</p>
-      )}
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full bg-foreground text-background rounded-lg px-4 py-2 text-sm font-medium hover:opacity-80 transition-opacity disabled:opacity-50"
-      >
-        {loading ? 'Sending link…' : 'Send magic link'}
-      </button>
-    </form>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label htmlFor="email" className="block text-sm text-muted mb-1">
+            {zh ? '邮箱' : 'Email'}
+          </label>
+          <input
+            id="email"
+            type="email"
+            required
+            autoComplete="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            className="w-full border border-border rounded-lg px-3 py-2 text-sm outline-none focus:border-border-strong transition-colors bg-background text-foreground"
+            placeholder="you@example.com"
+          />
+        </div>
+        {error && (
+          <p className="text-sm text-red-500">{error}</p>
+        )}
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-foreground text-background rounded-lg px-4 py-2 text-sm font-medium hover:opacity-80 transition-opacity disabled:opacity-50"
+        >
+          {loading
+            ? (zh ? '发送中…' : 'Sending link…')
+            : (zh ? '发送登录链接' : 'Send magic link')}
+        </button>
+      </form>
 
       <div className="flex items-center gap-3">
         <div className="flex-1 h-px bg-border" />
-        <span className="text-xs text-muted">or</span>
+        <span className="text-xs text-muted">{zh ? '或' : 'or'}</span>
         <div className="flex-1 h-px bg-border" />
       </div>
 
       <a
-        href="/guest"
+        href={zh ? '/guest?lang=zh' : '/guest'}
         className="w-full flex items-center justify-center border border-border rounded-lg px-4 py-2 text-sm text-foreground hover:bg-border transition-colors"
       >
-        Continue as Guest
+        {zh ? '访客模式' : 'Continue as Guest'}
       </a>
 
       <p className="text-center text-xs text-muted leading-relaxed">
-        By continuing, you agree to our{' '}
-        <Link href="/terms" className="underline underline-offset-2 hover:text-foreground transition-colors">Terms of Service</Link>
-        {' '}and{' '}
-        <Link href="/privacy" className="underline underline-offset-2 hover:text-foreground transition-colors">Privacy Policy</Link>.
+        {zh ? (
+          <>
+            继续即表示您同意我们的{' '}
+            <Link href="/terms" className="underline underline-offset-2 hover:text-foreground transition-colors">服务条款</Link>
+            {' '}和{' '}
+            <Link href="/privacy" className="underline underline-offset-2 hover:text-foreground transition-colors">隐私政策</Link>。
+          </>
+        ) : (
+          <>
+            By continuing, you agree to our{' '}
+            <Link href="/terms" className="underline underline-offset-2 hover:text-foreground transition-colors">Terms of Service</Link>
+            {' '}and{' '}
+            <Link href="/privacy" className="underline underline-offset-2 hover:text-foreground transition-colors">Privacy Policy</Link>.
+          </>
+        )}
       </p>
     </div>
   )

@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import StockSearch from '@/components/dashboard/StockSearch'
 import Link from 'next/link'
 
@@ -11,10 +12,13 @@ interface Ticker {
 
 type Status = 'idle' | 'loading' | 'sent' | 'error'
 
-export default function GuestPage() {
+function GuestPageContent() {
+  const params = useSearchParams()
   const [tickers, setTickers] = useState<Ticker[]>([])
   const [email, setEmail] = useState('')
-  const [language, setLanguage] = useState<'en' | 'zh'>('en')
+  const [language, setLanguage] = useState<'en' | 'zh'>(
+    params.get('lang') === 'zh' ? 'zh' : 'en'
+  )
   const [status, setStatus] = useState<Status>('idle')
 
   const zh = language === 'zh'
@@ -151,5 +155,13 @@ export default function GuestPage() {
         </div>
       </div>
     </main>
+  )
+}
+
+export default function GuestPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen" />}>
+      <GuestPageContent />
+    </Suspense>
   )
 }
